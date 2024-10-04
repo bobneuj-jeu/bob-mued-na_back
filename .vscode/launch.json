@@ -1,12 +1,16 @@
 {
-    "version": "0.2.0",
-    "configurations": [
+  "version": "0.2.0",
+  "configurations": [
       {
-        "command": "node server.js",
-        "name": "Node.js Server",
-        "request": "launch",
-        "type": "node-terminal"
+          "command": "node server.js", 
+          "name": "Node.js Server", 
+          "request": "launch", 
+          "type": "node-terminal", 
+          "cwd": "${.vscodeFolder}",
+          "env": { 
+              "PORT": "3000",
+              "API_KEY": "${env:API_KEY}" 
+          }
       }
-    ]
+  ]
 }
-
