@@ -104,15 +104,16 @@ app.get('/', (req, res) => {
 // 환경 변수에서 API 키 불러오기 (API 키는 .env 파일에 저장)
 const API_KEY = process.env.API_KEY;
 const API_URL = 'https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15081072';  // 식단 API 엔드포인트
+
 // 식단 생성 API 엔드포인트
 app.post('/api/mealplan', async (req, res) => {
-    const { userId } = req.body; // 클라이언트 요청에서 사용자 ID 추출
+    const { id, password } = req.body; // 클라이언트 요청에서 ID와 비밀번호 추출
 
     try {
-        // 데이터베이스에서 사용자 정보를 가져오기
-        const query = 'SELECT allergy, diabetes, AntingElse FROM users WHERE id = ?'; // 사용자 정보 쿼리
+        // ID와 비밀번호로 사용자 정보 검색
+        const query = 'SELECT id, allergy, diabetes, AntingElse FROM users WHERE id = ? AND password = ?'; // ID와 비밀번호로 사용자 정보 쿼리
         let conn = await pool.getConnection();
-        const user = await conn.query(query, [userId]);
+        const user = await conn.query(query, [id, password]);
         
         if (user.length === 0) {
             return res.status(404).json({ success: false, error: '사용자를 찾을 수 없습니다.' });
