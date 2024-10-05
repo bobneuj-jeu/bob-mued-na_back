@@ -9,7 +9,7 @@
           "cwd": "${.vscodeFolder}",
           "env": { 
               "PORT": "3000",
-              "API_KEY": "${env:API_KEY}" 
+              "API_KEY": "${env:AI_API_KEY}" 
           }
       }
   ]
