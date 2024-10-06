@@ -169,7 +169,7 @@ app.get('/menu/:userid', async (req, res) => {
 });
 
 // 메뉴 데이터를 삽입하거나 수정하는 API 엔드포인트// 메뉴 데이터를 삽입하거나 수정하는 API 엔드포인트
-app.put('/mealplan/:userid', async (req, res) => {
+app.put('/menu/:userId', async (req, res) => {
   const { userId, mealPlan } = req.body; // 클라이언트 요청에서 사용자 ID와 식단 리스트 추출
 
   // mealPlan이 유효한지 확인
@@ -210,7 +210,7 @@ app.get('/', (req, res) => {
 });
 
 // 식단 생성 API
-app.post('/mealplan', (req, res) => {
+app.post('/menu/:userId', (req, res) => {
     const { userId, password, allergy, diabetes, AnythingElse, fridgeIngredients } = req.body;
   
     // 사용자 정보를 확인하는 쿼리 (사용자 인증)
