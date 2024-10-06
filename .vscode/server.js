@@ -168,40 +168,40 @@ app.get('/menu/:userid', async (req, res) => {
     }
 });
 
-// 메뉴 데이터를 삽입하거나 수정하는 API 엔드포인트
-app.post('/mealplan/:userid', async (req, res) => {
-    const { userId, mealPlan } = req.body; // 클라이언트 요청에서 사용자 ID와 식단 리스트 추출
+// 메뉴 데이터를 삽입하거나 수정하는 API 엔드포인트// 메뉴 데이터를 삽입하거나 수정하는 API 엔드포인트
+app.put('/mealplan/:userid', async (req, res) => {
+  const { userId, mealPlan } = req.body; // 클라이언트 요청에서 사용자 ID와 식단 리스트 추출
 
-    // mealPlan이 유효한지 확인
-    if (!Array.isArray(mealPlan) || mealPlan.length === 0) {
-        return res.status(400).json({ success: false, error: '식단 리스트가 필요합니다.' });
-    }
+  // mealPlan이 유효한지 확인
+  if (!Array.isArray(mealPlan) || mealPlan.length === 0) {
+      return res.status(400).json({ success: false, error: '식단 리스트가 필요합니다.' });
+  }
 
-    // 쿼리 작성 (기존 식단이 있는지 확인)
-    const selectQuery = 'SELECT * FROM mealPlans WHERE userId = ?'; // 사용자 ID로 기존 식단 조회
+  // 쿼리 작성 (기존 식단이 있는지 확인)
+  const selectQuery = 'SELECT * FROM mealPlans WHERE userId = ?'; // 사용자 ID로 기존 식단 조회
 
-    let conn;
-    try {
-        conn = await pool.getConnection(); // 데이터베이스 연결
-        const existingMealPlan = await conn.query(selectQuery, [userId]); // 기존 식단 조회
+  let conn;
+  try {
+      conn = await pool.getConnection(); // 데이터베이스 연결
+      const existingMealPlan = await conn.query(selectQuery, [userId]); // 기존 식단 조회
 
-        if (existingMealPlan.length > 0) {
-            // 기존 식단이 있는 경우 수정
-            const updateQuery = 'UPDATE mealPlans SET mealPlan = ? WHERE userId = ?'; // 식단 업데이트 쿼리
-            await conn.query(updateQuery, [JSON.stringify(mealPlan), userId]);
-            return res.json({ success: true, message: '식단이 수정되었습니다.' });
-        } else {
-            // 기존 식단이 없는 경우 삽입
-            const insertQuery = 'INSERT INTO mealPlans (userId, mealPlan) VALUES (?, ?)'; // 식단 삽입 쿼리
-            await conn.query(insertQuery, [userId, JSON.stringify(mealPlan)]);
-            return res.json({ success: true, message: '식단이 삽입되었습니다.' });
-        }
-    } catch (err) {
-        console.error('데이터 삽입/수정 중 오류 발생:', err);
-        return res.status(500).json({ success: false, error: '식단 삽입/수정 중 오류 발생' });
-    } finally {
-        if (conn) conn.release(); // 연결 해제
-    }
+      if (existingMealPlan.length > 0) {
+          // 기존 식단이 있는 경우 수정
+          const updateQuery = 'UPDATE mealPlans SET mealPlan = ? WHERE userId = ?'; // 식단 업데이트 쿼리
+          await conn.query(updateQuery, [JSON.stringify(mealPlan), userId]);
+          return res.json({ success: true, message: '식단이 수정되었습니다.' });
+      } else {
+          // 기존 식단이 없는 경우 삽입
+          const insertQuery = 'INSERT INTO mealPlans (userId, mealPlan) VALUES (?, ?)'; // 식단 삽입 쿼리
+          await conn.query(insertQuery, [userId, JSON.stringify(mealPlan)]);
+          return res.json({ success: true, message: '식단이 삽입되었습니다.' });
+      }
+  } catch (err) {
+      console.error('데이터 삽입/수정 중 오류 발생:', err);
+      return res.status(500).json({ success: false, error: '식단 삽입/수정 중 오류 발생' });
+  } finally {
+      if (conn) conn.release(); // 연결 해제
+  }
 });
 
 // 루트 경로에 대한 GET 요청 처리
