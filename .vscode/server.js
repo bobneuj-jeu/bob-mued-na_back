@@ -14,26 +14,24 @@ app.use(express.static(path.join(__dirname, 'public'))); // 'public' 폴더에�
 const API_KEY = process.env.API_KEY;
 const API_URL = 'https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15081072';  // 식단 API 엔드포인트
 
-// CloudType 데이터베이스 연결 설정
-const pool = mariadb.createPool({
-    host: 'localhost', // CloudType에서 제공하는 호스트 이름
-    user: 'user', // CloudType 데이터베이스 사용자 이름
-    password: '', // CloudType 데이터베이스 비밀번호
-    database: 'food_planner', // CloudType 데이터베이스 이름
-    port: 3306, // 기본 MySQL 포트 (필요시 변경)
-    connectionLimit: 5 // 커넥션 풀 크기
-});
-
-// 데이터베이스 연결
-async function connectToDatabase() {
-    try {
-        const conn = await pool.getConnection();
-        console.log('데이터베이스에 연결되었습니다.');
-        conn.release(); // 연결 해제
-    } catch (err) {
-        console.error('데이터베이스 연결 오류:', err);
+// MariaDB 연결 설정
+const connection = mysql.createConnection({
+    host: process.env.DB_HOST, // 호스트
+    user: process.env.DB_USER, // 사용자
+    password: process.env.DB_PASSWORD, // 비밀번호
+    database: process.env.DB_NAME // 데이터베이스 이름
+  });
+  
+// 연결 테스트
+connection.connect((err) => {
+    if (err) {
+      console.error('데이터베이스 연결 실패: ' + err.stack);
+      return;
     }
-}
+    console.log('데이터베이스에 연결됨: ' + connection.threadId);
+  });
+  
+  module.exports = connection; // 다른 파일에서 사용하기 위해 연결 객체를 내보냄
 
 connectToDatabase();
 
