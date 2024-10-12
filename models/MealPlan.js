@@ -1,4 +1,3 @@
-// 식단 모델을 정의하는 파일
 const pool = require('../config/db'); // DB 연결 설정 가져오기
 
 class MealPlan {
