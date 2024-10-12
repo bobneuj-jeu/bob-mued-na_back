@@ -69,22 +69,22 @@ exports.saveMealPlan = async (req, res) => {
         conn = await pool.getConnection(); // DB 연결
         const [existingMealPlan] = await conn.query(selectQuery, [userId, meal_date, meal_time]); // 기존 식단 조회
 
-        if (existingMealPlan.length > 0) {
-            // 기존 식단이 있는 경우 수정
-            const updateQuery = `
+        const upsertQuery = existingMealPlan.length > 0 
+            ? `
                 UPDATE meal_plans 
                 SET menu = ? 
                 WHERE user_id = ? AND meal_date = ? AND meal_time = ?
-            `;
-            await conn.query(updateQuery, [JSON.stringify(mealPlan), userId, meal_date, meal_time]); // 식단 수정
-        } else {
-            // 기존 식단이 없는 경우 삽입
-            const insertQuery = `
+            `
+            : `
                 INSERT INTO meal_plans (user_id, meal_date, meal_time, menu) 
                 VALUES (?, ?, ?, ?)
             `;
-            await conn.query(insertQuery, [userId, meal_date, meal_time, JSON.stringify(mealPlan)]); // 식단 삽입
-        }
+        
+        // 식단 삽입 또는 수정
+        await conn.query(upsertQuery, existingMealPlan.length > 0 
+            ? [JSON.stringify(mealPlan), userId, meal_date, meal_time] 
+            : [userId, meal_date, meal_time, JSON.stringify(mealPlan)]
+        );
 
         // 재료 수량 제외
         for (const ingredient of mealPlan) {
