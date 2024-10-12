@@ -27,11 +27,15 @@ exports.getMealPlan = async (req, res) => {
     }
 };
 
-// AI가 식단을 생성하는 함수
 const generateMealPlanFromAI = async (userId, allergy, diabetes, AnythingElse) => {
+    // 입력 검증
+    if (!userId || !allergy || !diabetes || !AnythingElse) {
+        throw new Error('모든 입력 값을 제공해야 합니다.');
+    }
+
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: 'gpt-3.5-turbo', // 사용할 모델
+            model: 'gpt-3.5-turbo',
             messages: [
                 {
                     role: 'user',
@@ -39,17 +43,28 @@ const generateMealPlanFromAI = async (userId, allergy, diabetes, AnythingElse) =
                     이 정보를 바탕으로 다음과 같은 형식의 식단을 추천해줘: ["비빔밥", "미역국", "호박전", "나물", "장조림", "떡"].`
                 }
             ],
-            max_tokens: 100 // 응답의 최대 토큰 수 (조정 가능)
+            max_tokens: 100
         }, {
             headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`, // 인증 헤더
-                'Content-Type': 'application/json' // JSON 형식으로 요청
+                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                'Content-Type': 'application/json'
             }
         });
 
+        // 응답 형식 검증
+        if (!response.data.choices || response.data.choices.length === 0) {
+            throw new Error('AI의 응답이 유효하지 않습니다.');
+        }
+
         // AI가 생성한 식단을 배열 형식으로 변환
         const mealPlan = JSON.parse(response.data.choices[0].message.content);
-        return mealPlan; // 생성된 식단 반환
+        
+        // 반환된 식단 데이터의 형식 검증
+        if (!Array.isArray(mealPlan)) {
+            throw new Error('생성된 식단 형식이 올바르지 않습니다.');
+        }
+
+        return mealPlan;
     } catch (err) {
         console.error('AI 식단 생성 중 오류 발생:', err);
         throw new Error('AI 식단 생성 실패');
