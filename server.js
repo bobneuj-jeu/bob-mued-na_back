@@ -4,6 +4,9 @@ const bodyParser = require('body-parser'); // 요청 본문 파싱 모듈 가져
 const authRoutes = require('./routes/usersR'); // 인증 라우트 가져오기
 const mealRoutes = require('./routes/mealR'); // 식단 라우트 가져오기
 const fridgeRoutes = require('./routes/fridgeR'); // 냉장고 라우트 가져오기
+const requestLogger = require('./middleware/requestLogger');
+const authMiddleware = require('./middleware/auth');
+const errorMiddleware = require('./middleware/error');
 const path = require('path'); // 경로 처리 모듈 가져오기
 
 const app = express();
@@ -25,7 +28,13 @@ app.use('/api/users', usersR); // 인증 관련 라우트
 app.use('/api/meals', mealR); // 식단 관련 라우트
 app.use('/api/fridge', fridgeR); // 냉장고 관련 라우트
 
+app.use(requestLogger);
+
+// 인증이 필요한 라우트에 대해 인증 미들웨어 사용
+app.use('/api/protected', auth, protectedRoutes);
+app.use(error); // 오류 처리 미들웨어 사용
+
 // 서버 시작
-app.listen(PORT, () => {
-    console.log(`서버가 ${PORT} 포트에서 실행 중입니다.`); 
+app.listen(process.env.PORT, () => {
+    console.log(`서버가 ${process.env.PORT}에서 실행 중입니다.`);
 });
