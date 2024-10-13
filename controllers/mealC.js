@@ -40,7 +40,9 @@ const generateMealPlanFromAI = async (userId, allergy, diabetes, AnythingElse) =
                 {
                     role: 'user',
                     content: `사용자 ID: ${userId}, 알레르기: ${allergy}, 당뇨 옵션: ${diabetes}, 기타 질환: ${AnythingElse}. 
-                    이 정보를 바탕으로 다음과 같은 형식의 식단을 추천해줘: ["비빔밥", "미역국", "호박전", "나물", "장조림", "떡"].`
+                    이 정보를 바탕으로 다음과 같은 형식의 식단을 추천해줘: ["비빔밥", "미역국", "호박전", "나물", "장조림", "떡"].
+                    또 부산사투리에 관련된 음식이름을 무조건 1개 이상인 식단을 1주 분량으로 짜줘. 단, 메뉴는 면이나 밥과 면, 반찬 3개이상, 디저트 1개이상이여야해
+                    `
                 }
             ],
             max_tokens: 100
