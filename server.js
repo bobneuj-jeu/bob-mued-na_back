@@ -7,6 +7,8 @@ const fridgeRoutes = require('./routes/fridgeR'); // 냉장고 라우트 가져�
 const requestLogger = require('./middleware/requestLogger');
 const authMiddleware = require('./middleware/auth');
 const errorMiddleware = require('./middleware/error');
+const successRoutes = require('./routes/successR');
+
 const path = require('path'); // 경로 처리 모듈 가져오기
 const cors = require('cors');
 
@@ -29,6 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/users', usersRoutes); // 인증 관련 라우트
 app.use('/api/meals', mealRoutes); // 식단 관련 라우트
 app.use('/api/fridge', fridgeRoutes); // 냉장고 관련 라우트
+app.use('/api/meals', successRoutes); // 성공률
 
 app.use(requestLogger);
 
