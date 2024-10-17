@@ -1,23 +1,34 @@
-const pool = require('../config/db'); // DB 연결 설정 가져오기
+const pool = require('../config/db'); // DB 연결 설정
 const axios = require('axios');
 
 // AI API 인증키 설정 (환경 변수)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+// 데이터베이스 연결 및 쿼리 실행을 위한 헬퍼 함수
+const executeQuery = async (query, params) => {
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        const [results] = await conn.query(query, params);
+        return results;
+    } catch (error) {
+        throw new Error(error.message);
+    } finally {
+        if (conn) conn.release();
+    }
+};
+
 // 식단 조회
 exports.getMealPlan = async (req, res) => {
-    const { userId } = req.body; // 요청 본문에서 사용자 ID 가져오기
+    const { userId } = req.body; // 사용자 ID 가져오기
     if (!userId) {
         return res.status(400).json({ error: '사용자 ID를 제공해야 합니다.' });
     }
 
     const query = 'SELECT meal_date, meal_time, menu FROM meal_plans WHERE user_id = ?';
-    let conn;
 
     try {
-        conn = await pool.getConnection();
-        const [results] = await conn.query(query, [userId]);
-
+        const results = await executeQuery(query, [userId]);
         if (!results.length) {
             return res.status(404).json({ error: '선택한 날짜에 대한 식단이 없습니다.' });
         }
@@ -33,8 +44,6 @@ exports.getMealPlan = async (req, res) => {
     } catch (err) {
         console.error('식단 조회 중 오류 발생:', err.message);
         res.status(500).json({ error: '식단 데이터를 가져오는 중 오류 발생' });
-    } finally {
-        if (conn) conn.release();
     }
 };
 
@@ -46,12 +55,9 @@ exports.getUserInfo = async (req, res) => {
     }
 
     const query = 'SELECT allergies, diabetes, anything_else, excluded_dates, meal_time FROM user_info WHERE user_id = ?';
-    let conn;
 
     try {
-        conn = await pool.getConnection();
-        const [results] = await conn.query(query, [userId]);
-
+        const results = await executeQuery(query, [userId]);
         if (!results.length) {
             return res.status(404).json({ error: '해당 사용자에 대한 정보가 없습니다.' });
         }
@@ -60,8 +66,6 @@ exports.getUserInfo = async (req, res) => {
     } catch (err) {
         console.error('사용자 정보 조회 중 오류 발생:', err.message);
         res.status(500).json({ error: '사용자 정보를 가져오는 중 오류 발생' });
-    } finally {
-        if (conn) conn.release();
     }
 };
 
@@ -76,17 +80,15 @@ exports.postGenerate = async (req, res) => {
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: 'gpt-3.5-turbo',
-            messages: [
-                {
-                    role: 'user',
-                    content: `사용자 ID: ${userId}, 알레르기: ${allergy}, 당뇨 옵션: ${diabetes}, 기타 질환: ${anythingElse}, 제외할 날짜: ${excludedDates.join(', ')}, 식사 시간: ${mealTime}. 
-                    이 정보를 바탕으로 다음과 같은 형식의 식단을 추천해줘: ["1", "2", "3", "4", "5", "6"].
-                    또 예시를 참고하여 음식이름을 부산사투리로 변환한 것이 무조건 1개 이상인 식단을 매일 겹치지 않게 1주 분량으로 짜줘.
-                    (예 : 전 -> 찌짐, 부추 -> 정구지, 찌개 -> 짜글이) 단, 메뉴는 면이나 밥과 면, 반찬 3개 이상, 디저트 1개 이상이여야 해. 
-                    부산에서 자주 해먹을 수 있는 요리면 더 좋아. 그리고 표시되는 이름을 최대한 부산사투리로 이뤄지게 해.
-                    표시되는 메뉴는 메뉴 이름만 표시되게 해줘.`
-                }
-            ],
+            messages: [{
+                role: 'user',
+                content: `사용자 ID: ${userId}, 알레르기: ${allergy}, 당뇨 옵션: ${diabetes}, 기타 질환: ${anythingElse}, 제외할 날짜: ${excludedDates.join(', ')}, 식사 시간: ${mealTime}. 
+                이 정보를 바탕으로 다음과 같은 형식의 식단을 추천해줘: ["1", "2", "3", "4", "5", "6"].
+                또 예시를 참고하여 음식이름을 부산사투리로 변환한 것이 무조건 1개 이상인 식단을 매일 겹치지 않게 1주 분량으로 짜줘.
+                (예 : 전 -> 찌짐, 부추 -> 정구지, 찌개 -> 짜글이) 단, 메뉴는 면이나 밥과 면, 반찬 3개 이상, 디저트 1개 이상이여야 해. 
+                부산에서 자주 해먹을 수 있는 요리면 더 좋아. 그리고 표시되는 이름을 최대한 부산사투리로 이뤄지게 해.
+                표시되는 메뉴는 메뉴 이름만 표시되게 해줘.`
+            }],
             max_tokens: 300
         }, {
             headers: {
@@ -95,7 +97,6 @@ exports.postGenerate = async (req, res) => {
             }
         });
 
-        // 응답 검증 및 처리
         const mealPlan = response.data.choices?.[0]?.message?.content;
         if (!mealPlan) {
             return res.status(500).json({ error: 'AI의 응답이 유효하지 않습니다.' });
@@ -121,23 +122,46 @@ exports.saveModifiedMealPlan = async (req, res) => {
         return res.status(400).json({ error: '모든 입력 값을 제공해야 합니다.' });
     }
 
-    let conn;
+    const upsertQuery = `
+        INSERT INTO meal_plans (user_id, meal_date, meal_time, menu) 
+        VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE menu = VALUES(menu)
+    `;
+
     try {
-        conn = await pool.getConnection();
-
-        const upsertQuery = `
-            INSERT INTO meal_plans (user_id, meal_date, meal_time, menu) 
-            VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE menu = VALUES(menu)
-        `;
-
-        await conn.query(upsertQuery, [userId, meal_date, meal_time, JSON.stringify(mealPlan)]);
-
+        await executeQuery(upsertQuery, [userId, meal_date, meal_time, JSON.stringify(mealPlan)]);
         res.status(200).json({ success: true, message: '수정된 식단이 저장되었습니다.' });
     } catch (err) {
         console.error('식단 저장 중 오류 발생:', err.message);
         res.status(500).json({ error: '수정된 식단 저장 중 오류 발생' });
-    } finally {
-        if (conn) conn.release();
+    }
+};
+
+// 식사 업데이트 로직
+exports.updateMeal = async (req, res) => {
+    const { userId } = req.params; // URL에서 사용자 ID 추출
+    const { meal_date, meal_time, mealData } = req.body; // 요청 본문에서 업데이트할 식사 데이터 추출
+
+    if (!mealData || !meal_date || !meal_time) { // 필요한 데이터가 없으면 오류 반환
+        return res.status(400).json({ error: '필수 입력 값이 누락되었습니다.' });
+    }
+
+    const query = `
+        UPDATE meal_plans 
+        SET menu = ?, meal_date = ?, meal_time = ?
+        WHERE user_id = ? AND meal_date = ? AND meal_time = ?
+    `;
+
+    try {
+        const updatedMeal = await executeQuery(query, [JSON.stringify(mealData.menu), meal_date, meal_time, userId, meal_date, meal_time]);
+        
+        if (updatedMeal.affectedRows === 0) {
+            return res.status(404).json({ error: '업데이트할 식사를 찾을 수 없습니다.' });
+        }
+
+        res.status(200).json({ message: '식사가 성공적으로 업데이트되었습니다.', updatedMeal: { userId, meal_date, meal_time, menu: mealData.menu } });
+    } catch (error) {
+        console.error('식사 업데이트 중 오류 발생:', error);
+        res.status(500).json({ error: '서버 오류가 발생했습니다.' });
     }
 };

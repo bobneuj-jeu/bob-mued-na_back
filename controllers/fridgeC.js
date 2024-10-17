@@ -2,11 +2,11 @@ const pool = require('../config/db'); // DB 연결 설정 가져오기
 
 // 냉장고 재료 목록 조회
 exports.getFridgeIngredients = async (req, res) => {
-    const { userId } = req.body; // 요청 본문에서 사용자 ID 가져오기
+    const { userId } = req.params; // 경로 매개변수에서 사용자 ID 가져오기
 
     const query = 'SELECT * FROM fridge_ingredients WHERE user_id = ?'; // 재료 조회 쿼리
     let conn;
-    
+
     try {
         conn = await pool.getConnection(); // DB 연결
         const [results] = await conn.query(query, [userId]); // 재료 조회 실행

@@ -38,7 +38,7 @@ app.use('/fridge', fridgeRoutes);
 app.use('/success', successRoutes);
 
 // 인증이 필요한 라우트 설정
-app.use('/api/protected', authMiddleware);
+app.use('/protected', authMiddleware);
 
 // 오류 처리 미들웨어
 app.use(errorMiddleware);
