@@ -6,10 +6,11 @@ const OPENAI_API_KEY = 'OPENAI_API';
 
 // 식단 조회
 exports.getMealPlan = async (req, res) => {
-    const { userId } = req.params; // URL 매개변수에서 사용자 ID 가져오기
+    const { userId } = req.body; // 요청 본문에서 사용자 ID 가져오기
 
     const query = 'SELECT meal_date, meal_time, menu FROM meal_plans WHERE user_id = ?'; // 식단 조회 쿼리
     let conn;
+    
     try {
         conn = await pool.getConnection(); // DB 연결
         const [results] = await conn.query(query, [userId]); // 식단 조회 실행
@@ -18,7 +19,14 @@ exports.getMealPlan = async (req, res) => {
             return res.status(404).json({ error: '해당 사용자에 대한 식단이 없습니다.' }); // 식단이 없으면 404 오류
         }
 
-        res.json({ success: true, data: results }); // 성공 시 데이터 전송
+        // 결과에서 menu를 배열로 변환
+        const formattedResults = results.map(item => ({
+            meal_date: item.meal_date,
+            meal_time: item.meal_time,
+            menu: item.menu.split(', ') // 가정: menu는 쉼표로 구분된 문자열로 저장됨
+        }));
+
+        res.status(200).json({ success: true, data: formattedResults }); // 성공 시 데이터 전송
     } catch (err) {
         console.error('식단 조회 중 오류 발생:', err); // 오류 로그 출력
         res.status(500).json({ error: '식단 데이터를 가져오는 중 오류 발생' }); // 오류 메시지 전송

@@ -8,4 +8,7 @@ router.get('/:userId', getFridgeIngredients); // GET 요청 시 재료 조회 �
 // 냉장고 재료 추가 라우트
 router.post('/', addFridgeIngredient); // POST 요청 시 재료 추가 처리
 
+// 재료 삭제 라우트 정의
+app.delete('/fridge/:userId/:ingredient_name', deleteFridgeIngredient);
+
 module.exports = router; // 라우터 모듈 내보내기

@@ -35,7 +35,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/users', usersRoutes);
 app.use('/api/meals', mealRoutes);
 app.use('/api/fridge', fridgeRoutes);
-app.use('/api/success', successRoutes); // 경로 수정
+app.use('/api/success', successRoutes);
 
 // 인증이 필요한 라우트 설정
 app.use('/api/protected', authMiddleware);
