@@ -32,10 +32,10 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 라우트 설정
-app.use('/api/users', usersRoutes);
-app.use('/api/meals', mealRoutes);
-app.use('/api/fridge', fridgeRoutes);
-app.use('/api/success', successRoutes);
+app.use('/users', usersRoutes);
+app.use('/meals', mealRoutes);
+app.use('/fridge', fridgeRoutes);
+app.use('/success', successRoutes);
 
 // 인증이 필요한 라우트 설정
 app.use('/api/protected', authMiddleware);
