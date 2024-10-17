@@ -120,12 +120,12 @@ exports.postGenerate = async (req, res) => {
         const response = await axios.post('https://api.openai.com/v1/completions', {
             model: 'text-davinci-003',
             prompt: prompt,
-            max_tokens: 300,
+            max_tokens: 1000,
             n: 1,
             temperature: 1.0,
         }, {
             headers: {
-                'Authorization': `Bearer ${process.env.OPENAI_API}`,
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
                 'Content-Type': 'application/json'
             }
         });
