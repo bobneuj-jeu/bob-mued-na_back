@@ -26,10 +26,10 @@ const calculateSuccessRate = async (userId, date, images) => {
     return result; // 성공률 결과 반환
 };
 
-// 성공률 조회 함수 (GET 요청)
+// 성공률 조회 함수 (POST 요청)
 const getSuccessRate = async (req, res) => {
     try {
-        const { userId, date } = req.query; // 요청에서 userId와 date를 추출
+        const { userId, date } = req.body; // 요청 본문에서 userId와 date를 추출
         if (!userId || !date) { // 필수 파라미터 체크
             return res.status(400).json({ error: 'userId와 date는 필수입니다.' });
         }
