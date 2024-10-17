@@ -4,7 +4,7 @@ const express = require('express');
 require('dotenv').config(); // 환경 변수를 로드하기 위해 필요
 
 // AI API 인증키 설정 (환경 변수)
-const OPENAI_API_KEY = process.env.OPENAI_API;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 // 데이터베이스 연결 및 쿼리 실행을 위한 헬퍼 함수
 const executeQuery = async (query, params) => {
