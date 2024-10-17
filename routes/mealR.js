@@ -1,11 +1,20 @@
-const express = require('express'); // express 모듈 가져오기
-const { getMealPlan, saveMealPlan } = require('../controllers/mealC'); // 컨트롤러에서 식단 관련 함수 가져오기
+const express = require('express');
+const router = express.Router();
+const { getMealPlan, getUserInfo, postGenerate, saveModifiedMealPlan, updateMeal } = require('../controllers/mealC');
 
-const router = express.Router(); // 새로운 라우터 객체 생성
+// 식단 조회 (GET 요청)
+router.get('/meal-plan/:userId', getMealPlan);
 
-// 식단 조회 라우트
-router.get('/:userId', getMealPlan); // GET 요청 시 식단 조회 처리
-// 식단 저장 라우트
-router.put('/:userId', saveMealPlan); // PUT 요청 시 식단 생성 또는 수정 처리
+// 사용자 정보 조회 (GET 요청)
+router.get('/user-info', getUserInfo);
 
-module.exports = router; // 라우터 모듈 내보내기
+// AI 식단 생성 (POST 요청)
+router.post('/generate', postGenerate);
+
+// 수정된 식단 저장 (POST 요청)
+router.post('/save', saveModifiedMealPlan);
+
+// 식사 업데이트 (PUT 요청)
+router.put('/update/:userId', updateMeal); // 핸들러가 잘 정의되었는지 확인
+
+module.exports = router;
