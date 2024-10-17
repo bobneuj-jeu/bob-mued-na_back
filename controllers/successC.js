@@ -1,4 +1,4 @@
-const { getMealData, logMealSuccess } = require('../models/mealModel');
+const { getMealData, logMealSuccess } = require('../models/success');
 
 // 식단 성공률 계산 로직
 const calculateSuccessRate = async (userId, date, images) => {

@@ -1,4 +1,4 @@
-const pool = require('../database'); // 데이터베이스 연결 설정
+const pool = require('../config/db'); // DB 연결 설정 가져오기
 
 // 특정 사용자의 식단 데이터를 가져오는 함수
 const getMealData = async (userId, date) => {
