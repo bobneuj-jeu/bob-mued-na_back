@@ -1,8 +1,9 @@
 const pool = require('../config/db'); // DB 연결 설정
 const axios = require('axios');
+require('dotenv').config(); // 환경 변수를 로드하기 위해 필요
 
 // AI API 인증키 설정 (환경 변수)
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API;
 
 // 데이터베이스 연결 및 쿼리 실행을 위한 헬퍼 함수
 const executeQuery = async (query, params) => {
@@ -54,7 +55,7 @@ exports.getUserInfo = async (req, res) => {
         return res.status(400).json({ error: '사용자 ID를 제공해야 합니다.' });
     }
 
-    const query = 'SELECT allergies, diabetes, anything_else, excluded_dates, meal_time FROM user_info WHERE user_id = ?';
+    const query = 'SELECT allergy, diabetes, Anything_else, meal_date, meal_time FROM user_info WHERE user_id = ?';
 
     try {
         const results = await executeQuery(query, [userId]);
@@ -71,9 +72,10 @@ exports.getUserInfo = async (req, res) => {
 
 // AI 식단 생성
 exports.postGenerate = async (req, res) => {
-    const { userId, allergy, diabetes, anythingElse, excludedDates, mealTime } = req.body;
+    const { userId, allergy, diabetes, AnythingElse, meal_date, meal_time } = req.body;
 
-    if (!userId || !allergy || !diabetes || !anythingElse || !excludedDates || !mealTime) {
+    // 입력값 검증
+    if (!userId || !allergy || !diabetes || !AnythingElse || !meal_date || !meal_time) {
         return res.status(400).json({ error: '모든 입력 값을 제공해야 합니다.' });
     }
 
@@ -81,8 +83,8 @@ exports.postGenerate = async (req, res) => {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: 'gpt-3.5-turbo',
             messages: [{
-                role: 'user',
-                content: `사용자 ID: ${userId}, 알레르기: ${allergy}, 당뇨 옵션: ${diabetes}, 기타 질환: ${anythingElse}, 제외할 날짜: ${excludedDates.join(', ')}, 식사 시간: ${mealTime}. 
+                role: 'assistant',
+                content: `사용자 ID: ${userId}, 알레르기: ${allergy}, 당뇨 옵션: ${diabetes}, 기타 질환: ${AnythingElse}, 제외할 날짜: ${meal_date.join(', ')}, 식사 시간: ${meal_time}. 
                 이 정보를 바탕으로 다음과 같은 형식의 식단을 추천해줘: ["1", "2", "3", "4", "5", "6"].
                 또 예시를 참고하여 음식이름을 부산사투리로 변환한 것이 무조건 1개 이상인 식단을 매일 겹치지 않게 1주 분량으로 짜줘.
                 (예 : 전 -> 찌짐, 부추 -> 정구지, 찌개 -> 짜글이) 단, 메뉴는 면이나 밥과 면, 반찬 3개 이상, 디저트 1개 이상이여야 해. 
@@ -92,7 +94,7 @@ exports.postGenerate = async (req, res) => {
             max_tokens: 300
         }, {
             headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                'Authorization': `Bearer ${process.env.OPENAI_API}`, // 환경 변수에서 API 키 가져오기
                 'Content-Type': 'application/json'
             }
         });
@@ -109,9 +111,10 @@ exports.postGenerate = async (req, res) => {
 
         res.status(200).json({ success: true, data: parsedMealPlan });
     } catch (err) {
-        console.error('AI 식단 생성 중 오류 발생:', err.message);
+        console.error('AI 식단 생성 중 오류 발생:', err.message, err.response?.data || '');
         res.status(500).json({ error: 'AI 식단 생성 실패' });
     }
+    
 };
 
 // 수정된 식단 저장

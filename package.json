@@ -1,27 +1,41 @@
 {
   "name": "package.json",
   "version": "1.0.0",
-  "description": "",
+  "description": "A project using OpenAI's ChatGPT API",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
-    "url": "backEndAI"
+    "url": "git+https://github.com/bobneuj-jeu/bob-mued-na_back.git"
   },
-  "author": "",
+  "author": "Roh",
   "license": "ISC",
-  "keywords": [],
+  "keywords": [
+    "OpenAI",
+    "ChatGPT",
+    "API"
+  ],
   "dependencies": {
     "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.21.0",
+    "express": "^4.21.1",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.3",
-    "openai": "^4.67.3"
-  }
+    "openai": "^4.67.3",
+    "take": "^0.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  },
+  "bugs": {
+    "url": "https://github.com/bobneuj-jeu/bob-mued-na_back/issues"
+  },
+  "homepage": "https://github.com/bobneuj-jeu/bob-mued-na_back#readme"
 }
