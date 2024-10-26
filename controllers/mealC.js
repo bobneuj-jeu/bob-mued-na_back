@@ -3,12 +3,8 @@ const express = require('express'); // express 모듈 임포트
 const pool = require('../config/db'); // DB 연결 설정
 const axios = require('axios');
 const path = require('path'); // path 모듈 임포트
-require('dotenv').config({ path: './config/.env' }); // config 폴더 내의 .env 파일 경로 지정
 
-// API 키 출력 (디버그용)
-//console.log("OpenAI API Key:", process.env.OPENAI_API_KEY); // 환경 변수 확인
-console.log(process.env.TEST_VAR);
-
+// config 폴더 내의 .env 파일 경로 지정
 dotenv.config({ path: path.join(__dirname, 'config', '.env') });
 
 const app = express();
@@ -125,18 +121,20 @@ exports.postGenerate = async (req, res) => {
             표시되는 메뉴는 메뉴 이름만 표시되게 해줘.
         `;
 
-        const response = await axios.post('https://api.openai.com/v1/completions', {
-            model: 'text-davinci-003',
-            prompt: prompt,
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-3.5-turbo',  // 또는 'gpt-4' 등
+            messages: [{
+                role: 'user',
+                content: prompt, // 사용자에게 보낼 메시지
+            }],
             max_tokens: 1000,
-            n: 1,
             temperature: 1.0,
         }, {
             headers: {
                 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
                 'Content-Type': 'application/json'
             }
-        });
+        });        
 
         // 응답에서 텍스트 내용 추출
         const completionText = response.data.choices[0].text.trim();
