@@ -1,10 +1,18 @@
+const dotenv = require('dotenv'); // dotenv 모듈 임포트
+const express = require('express'); // express 모듈 임포트
 const pool = require('../config/db'); // DB 연결 설정
 const axios = require('axios');
-const express = require('express');
-require('dotenv').config(); // 환경 변수를 로드하기 위해 필요
+const path = require('path'); // path 모듈 임포트
+require('dotenv').config({ path: './config/.env' }); // config 폴더 내의 .env 파일 경로 지정
 
-// AI API 인증키 설정 (환경 변수)
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+// API 키 출력 (디버그용)
+//console.log("OpenAI API Key:", process.env.OPENAI_API_KEY); // 환경 변수 확인
+console.log(process.env.TEST_VAR);
+
+dotenv.config({ path: path.join(__dirname, 'config', '.env') });
+
+const app = express();
+app.use(express.json());
 
 // 데이터베이스 연결 및 쿼리 실행을 위한 헬퍼 함수
 const executeQuery = async (query, params) => {
