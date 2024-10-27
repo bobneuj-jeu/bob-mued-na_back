@@ -5,6 +5,7 @@ const axios = require('axios');
 const path = require('path'); // path 모듈 임포트
 
 // config 폴더 내의 .env 파일 경로 지정
+console.log(process.env.OPENAI_API_KEY);
 dotenv.config({ path: path.join(__dirname, 'config', '.env') });
 
 const app = express();
