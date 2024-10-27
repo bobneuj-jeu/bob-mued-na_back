@@ -24,6 +24,12 @@ const executeQuery = async (query, params) => {
     }
 };
 
+// 오류 응답 처리 헬퍼 함수
+const handleErrorResponse = (res, error, statusCode = 500) => {
+    console.error(error); // 오류 콘솔 로그
+    return res.status(statusCode).json({ error: error.message });
+};
+
 // 식단 조회
 exports.getMealPlan = async (req, res) => {
     const { userId } = req.body; // 사용자 ID 가져오기
@@ -48,8 +54,7 @@ exports.getMealPlan = async (req, res) => {
 
         res.status(200).json({ success: true, data: formattedResults });
     } catch (err) {
-        console.error('식단 조회 중 오류 발생:', err.message);
-        res.status(500).json({ error: '식단 데이터를 가져오는 중 오류 발생' });
+        handleErrorResponse(res, err);
     }
 };
 
@@ -70,17 +75,16 @@ exports.getUserInfo = async (req, res) => {
 
         res.status(200).json({ success: true, data: results[0] });
     } catch (err) {
-        console.error('사용자 정보 조회 중 오류 발생:', err.message);
-        res.status(500).json({ error: '사용자 정보를 가져오는 중 오류 발생' });
+        handleErrorResponse(res, err);
     }
 };
 
 // AI 식단 생성
 exports.postGenerate = async (req, res) => {
-    const { userId, allergy, diabetes, AnythingElse, meal_date, meal_time } = req.body;
+    const { userId, allergy = 'none', diabetes, AnythingElse = 'none', meal_date, meal_time } = req.body;
 
     // 입력값 검증
-    if (!userId || !allergy || !diabetes || !AnythingElse || !meal_date || !meal_time ) {
+    if (!userId || !diabetes || !meal_date || !meal_time) {
         return res.status(400).json({ error: '모든 입력 값을 제공해야 합니다.' });
     }
 
@@ -127,17 +131,17 @@ exports.postGenerate = async (req, res) => {
                 role: 'user',
                 content: prompt, // 사용자에게 보낼 메시지
             }],
-            max_tokens: 1000,
+            max_tokens: 3000,
             temperature: 1.0,
         }, {
             headers: {
                 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             }
         });        
 
         // 응답에서 텍스트 내용 추출
-        const completionText = response.data.choices[0].text.trim();
+        const completionText = response.data.choices[0].message.content.trim();
         if (!completionText) {
             return res.status(500).json({ error: 'AI의 응답이 유효하지 않습니다.' });
         }
@@ -156,13 +160,12 @@ exports.postGenerate = async (req, res) => {
 
         // 생성된 식단을 MySQL 데이터베이스에 저장
         const query = 'INSERT INTO meal_plans (user_id, meal_date, meal_time, menu) VALUES (?, ?, ?, ?)';
-        await db.promise().query(query, [userId, mealPlanDates, meal_time, JSON.stringify(parsedMealPlan)]); // meal_date를 배열로 저장
+        await executeQuery(query, [userId, JSON.stringify(mealPlanDates), meal_time, JSON.stringify(parsedMealPlan)]); // meal_date를 배열로 저장
 
         // 최종 응답 반환
         return res.status(200).json({ mealPlan: parsedMealPlan });
     } catch (error) {
-        console.error('Error fetching data from OpenAI API:', error);
-        return res.status(500).json({ error: 'API 호출 중 오류가 발생했습니다.', details: error.message });
+        handleErrorResponse(res, error);
     }
 };
 
@@ -184,8 +187,7 @@ exports.saveModifiedMealPlan = async (req, res) => {
         await executeQuery(upsertQuery, [userId, meal_date, meal_time, JSON.stringify(mealPlan)]);
         res.status(200).json({ success: true, message: '수정된 식단이 저장되었습니다.' });
     } catch (err) {
-        console.error('식단 저장 중 오류 발생:', err.message);
-        res.status(500).json({ error: '수정된 식단 저장 중 오류 발생' });
+        handleErrorResponse(res, err);
     }
 };
 
@@ -205,15 +207,12 @@ exports.updateMeal = async (req, res) => {
     `;
 
     try {
-        const updatedMeal = await executeQuery(query, [JSON.stringify(mealData.menu), meal_date, meal_time, userId, meal_date, meal_time]);
-        
-        if (updatedMeal.affectedRows === 0) {
+        const result = await executeQuery(query, [JSON.stringify(mealData), meal_date, meal_time, userId, meal_date, meal_time]);
+        if (result.affectedRows === 0) { // 업데이트할 데이터가 없으면 오류 반환
             return res.status(404).json({ error: '업데이트할 식사를 찾을 수 없습니다.' });
         }
-
-        res.status(200).json({ message: '식사가 성공적으로 업데이트되었습니다.', updatedMeal: { userId, meal_date, meal_time, menu: mealData.menu } });
-    } catch (error) {
-        console.error('식사 업데이트 중 오류 발생:', error);
-        res.status(500).json({ error: '서버 오류가 발생했습니다.' });
+        res.status(200).json({ message: '식사가 성공적으로 업데이트되었습니다.', updatedMeal: { userId, meal_date, meal_time, menu: mealData } });
+    } catch (err) {
+        handleErrorResponse(res, err);
     }
 };
