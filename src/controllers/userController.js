@@ -7,15 +7,11 @@ const db = require('../database/db'); // DB 연결
 const registerUser = async (req, res) => {
   const { username, password, allergies, diabetes, other_conditions } = req.body;
 
-  // 비밀번호 해싱
   const hashedPassword = await bcrypt.hash(password, 10);
-
-  // 입력 데이터 기본값 처리
   const userAllergies = allergies || 'none';
-  const userDiabetes = diabetes || 'none'; // 종류로 변경
+  const userDiabetes = diabetes || 'none';
   const userOtherConditions = other_conditions || 'none';
 
-  // DB에 사용자 추가
   const query = `
     INSERT INTO users (username, password, allergies, diabetes, other_conditions)
     VALUES (?, ?, ?, ?, ?)`;
@@ -28,25 +24,55 @@ const registerUser = async (req, res) => {
   }
 };
 
-const calculateSuccessRate = (allergies, diabetes, other_conditions) => {
-  let score = 100; // 기본 점수 100
-  
-  // 알러지에 대한 조건
-  if (allergies && allergies !== 'none') {
-    score -= 20; // 알러지가 있을 경우 20점 차감
-  }
+// 로그인 함수
+const loginUser = async (req, res) => {
+  const { username, password } = req.body;
 
-  // 당뇨에 대한 조건
-  if (diabetes && diabetes !== 'none') {
-    score -= 30; // 당뇨가 있을 경우 30점 차감
-  }
+  const query = `SELECT password FROM users WHERE username = ?`;
 
-  // 기타 질환에 대한 조건
-  if (other_conditions && other_conditions !== 'none') {
-    score -= 10; // 기타 질환이 있을 경우 10점 차감
-  }
+  try {
+    const [user] = await db.query(query, [username]);
 
-  return Math.max(score, 0); // 0점 이하로는 떨어지지 않도록
+    if (user.length === 0) {
+      return res.status(401).json({ message: '사용자 이름 또는 비밀번호가 잘못되었습니다.' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user[0].password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: '사용자 이름 또는 비밀번호가 잘못되었습니다.' });
+    }
+
+    res.status(200).json({ message: '로그인 성공!' });
+  } catch (error) {
+    res.status(500).json({ message: '로그인 중 오류 발생', error });
+  }
 };
 
-module.exports = { registerUser };
+// 성공률 계산 함수
+const calculateSuccessRate = (req, res) => {
+  const { allergies, diabetes, other_conditions } = req.body;
+
+  let score = 100;
+
+  if (allergies && allergies !== 'none') {
+    score -= 20;
+  }
+
+  if (diabetes && diabetes !== 'none') {
+    score -= 30;
+  }
+
+  if (other_conditions && other_conditions !== 'none') {
+    score -= 10;
+  }
+
+  const successRate = Math.max(score, 0); // 0점 이하로는 떨어지지 않도록
+  res.status(200).json({ successRate });
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  calculateSuccessRate // 성공률 계산 함수 내보내기
+};

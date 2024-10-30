@@ -1,13 +1,11 @@
-// src/routes/userRoutes.js
+// src/routes/userRoute.js
+
 const express = require('express');
-const { register, login } = require('../controllers/userController');
-
 const router = express.Router();
+const { registerUser, loginUser, calculateSuccessRate } = require('../controllers/userController'); // 로그인 및 성공률 함수 가져오기
 
-// 사용자 등록 경로
-router.post('/signup', registerUser);
-
-// 사용자 로그인 경로
-router.post('/login', login);
+router.post('/signup', registerUser); // 사용자 등록
+router.post('/login', loginUser); // 로그인
+router.post('/success-rate', calculateSuccessRate); // 성공률 계산
 
 module.exports = router;

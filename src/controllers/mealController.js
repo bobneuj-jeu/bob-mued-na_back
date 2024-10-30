@@ -92,7 +92,24 @@ const addMealPlan = async (req, res) => {
   }
 };
 
+// 식단 업데이트 함수
+const updateMealPlan = async (req, res) => {
+  const { id } = req.params;
+  const { mealData } = req.body; // 예시로 추가된 데이터
+
+  // DB 업데이트 쿼리 (구체적인 쿼리는 필요에 따라 수정)
+  const query = `UPDATE mealPlans SET data = ? WHERE id = ?`;
+
+  try {
+    await db.query(query, [mealData, id]);
+    res.status(200).json({ message: '식단이 업데이트되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ message: '식단 업데이트 중 오류 발생', error });
+  }
+};
+
 module.exports = {
+  updateMealPlan,
   createMealPlan,
   addMealPlan,
   getMealPlansByDate
