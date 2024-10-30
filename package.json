@@ -2,7 +2,7 @@
   "name": "bob-mued-na",
   "version": "1.0.0",
   "description": "A Node.js project for bob-mued-na",
-  "main": "app.js",
+  "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/app.js"
