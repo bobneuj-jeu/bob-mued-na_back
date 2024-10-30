@@ -1,6 +1,7 @@
 {
   "name": "bob-mued-na",
   "version": "1.0.0",
+  "description": "A Node.js project for bob-mued-na",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -21,10 +22,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "bob-mued-na_back"
+    "url": "git+https://github.com/username/bob-mued-na_back.git"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
-  },
-  "description": ""
+  }
 }
