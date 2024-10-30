@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const db = require('../database/db'); // DB 연결
 
 // 사용자 등록 함수
