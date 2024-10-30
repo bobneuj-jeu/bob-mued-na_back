@@ -1,5 +1,3 @@
-// src/controllers/mealController.js
-
 const db = require('../database/db'); // DB 연결
 const { generateMealPlanAI } = require('../utils/openAI'); // OpenAI 유틸리티 임포트
 

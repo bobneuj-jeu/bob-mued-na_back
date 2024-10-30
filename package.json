@@ -1,9 +1,11 @@
 {
   "name": "bob-mued-na",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
@@ -14,8 +16,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "jsonwebtoken": "^9.0.2",
-    "knex": "^3.1.0",
     "mysql2": "^3.11.3",
     "openai": "^4.68.4"
   },
@@ -23,8 +23,8 @@
     "type": "git",
     "url": "bob-mued-na_back"
   },
-  "description": "",
   "devDependencies": {
-    "eslint": "^9.13.0"
-  }
+    "nodemon": "^3.1.7"
+  },
+  "description": ""
 }
