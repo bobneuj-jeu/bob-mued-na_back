@@ -1,5 +1,5 @@
 // src/scripts/createTestUsers.js
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const db = require('../database/db'); // DB 연결
 
 const createTestUsers = async () => {
