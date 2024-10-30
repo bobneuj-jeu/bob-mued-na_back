@@ -1,5 +1,3 @@
-// src/routes/userRoute.js
-
 const express = require('express');
 const router = express.Router();
 const { registerUser, loginUser, calculateSuccessRate } = require('../controllers/userController'); // 로그인 및 성공률 함수 가져오기
