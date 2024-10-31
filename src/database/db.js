@@ -14,7 +14,7 @@ const pool = mysql.createPool({
 const testConnection = async () => {
   try {
     const connection = await pool.getConnection(); // 커넥션 가져오기
-    console.log('데이터베이스에 연결되었습니다.');
+    console.log('데이터베이스에 연결되었습니다.'); // MariaDB / MySQL 연결 메시지
     await connection.release(); // 연결 해제
   } catch (error) {
     console.error('데이터베이스 연결 실패:', error.message); // 오류 발생 시 메시지 출력
