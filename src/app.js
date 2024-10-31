@@ -20,6 +20,20 @@ app.use('/fridge', fridgeRoutes); // 냉장고 관련 라우터
 
 module.exports = app;
 
+const cors = require("cors");
+app.use(
+  cors({
+    origin: [
+      "https://port-0-bob-mued-na-back-m2bnagfa9ba03cbe.sel4.cloudtype.app",
+      "https://web-bob-mued-na-fe-m2bo9hmmc0a012c5.sel4.cloudtype.app ",
+    ],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+    credentials: true,
+  })
+);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

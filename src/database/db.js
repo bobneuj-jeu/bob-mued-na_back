@@ -3,6 +3,7 @@ require('dotenv').config();
 
 // DB 연결 설정
 const pool = mysql.createPool({
+  type: 'mariadb',
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
