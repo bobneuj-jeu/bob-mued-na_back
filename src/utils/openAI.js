@@ -1,4 +1,3 @@
-// src/utils/openAI.js
 const { OpenAI } = require("openai");
 const db = require('../database/db'); // DB 연결
 
