@@ -47,6 +47,12 @@ const loginUser = async (req, res) => {
   }
 };
 
+// 로그아웃 처리
+app.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.send('Logout successful');
+});
+
 // 성공률 계산 함수
 const calculateSuccessRate = (req, res) => {
   const { allergies, diabetes, other_conditions } = req.body;
