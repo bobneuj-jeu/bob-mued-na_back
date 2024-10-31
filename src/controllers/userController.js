@@ -48,7 +48,7 @@ const loginUser = async (req, res) => {
 };
 
 // 로그아웃 처리
-app.get('/logout', (req, res) => {
+const logout = ('/logout', (req, res) => {
   req.session.destroy();
   res.send('Logout successful');
 });
@@ -78,5 +78,6 @@ const calculateSuccessRate = (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  logout,
   calculateSuccessRate // 성공률 계산 함수 내보내기
 };

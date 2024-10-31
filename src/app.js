@@ -20,7 +20,6 @@ app.use('/fridge', fridgeRoutes); // 냉장고 관련 라우터
 
 module.exports = app;
 
-const cors = require("cors");
 app.use(
   cors({
     origin: [
