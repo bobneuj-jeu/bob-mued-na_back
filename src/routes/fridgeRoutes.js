@@ -1,18 +1,15 @@
 const express = require('express');
-const { createFridgeItem, getFridgeItems, editFridgeItem, removeFridgeItem } = require('../controllers/fridgeController');
+const { createFridgeItem, getFridgeItems, removeFridgeItem } = require('../controllers/fridgeController');
 
 const router = express.Router();
 
-// 냉장고 재료 추가
-router.post('/', createFridgeItem);
+// 재료추가
+router.post('/', createFridgeItem); 
 
-// 사용자 냉장고 재료 조회
-router.get('/:userId', getFridgeItems);
+// 재료조회
+router.post('/items', getFridgeItems); 
 
-// 냉장고 재료 수정
-router.put('/:itemId', editFridgeItem);
-
-// 냉장고 재료 삭제
-router.delete('/:itemId', removeFridgeItem);
+// 재료삭제
+router.delete('/remove', removeFridgeItem);
 
 module.exports = router;
