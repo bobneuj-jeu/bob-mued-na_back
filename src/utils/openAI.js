@@ -11,20 +11,19 @@ const generateMealPlanAI = async (userId, meal_days, mealPlanDates) => {
   const query = 'SELECT allergies, diabetes, other_conditions FROM users WHERE id = ?';
   const [user] = await db.query(query, [userId]);
 
-  if (!user) {
+  // 사용자 확인 및 속성 추출
+  if (!user || user.length === 0) {
     throw new Error('사용자를 찾을 수 없습니다.');
   }
 
-  const userAllergies = user.allergies || 'none';
-  const userDiabetes = user.diabetes || 'none';
-  const userOtherConditions = user.other_conditions || 'none';
+  const { allergies = 'none', diabetes = 'none', other_conditions = 'none' } = user[0];
 
   // OpenAI에 전달할 프롬프트 구성
   const prompt = `
     사용자 ID: ${userId}, 
-    알레르기: ${userAllergies}, 
-    당뇨 옵션: ${userDiabetes}, 
-    기타 질환: ${userOtherConditions}, 
+    알레르기: ${allergies}, 
+    당뇨 옵션: ${diabetes}, 
+    기타 질환: ${other_conditions}, 
     요청된 요일: ${meal_days.join(', ')}, 
     식단 날짜: ${mealPlanDates.join(', ')}. 
     이 정보를 바탕으로 다음과 같은 형식의 식단을 추천해줘: 
@@ -45,10 +44,15 @@ const generateMealPlanAI = async (userId, meal_days, mealPlanDates) => {
       temperature: 0.7,
     });
 
-    return response.choices[0].message.content.trim(); // AI가 생성한 식단 반환
+    // 응답 구조 체크
+    if (response.choices && response.choices.length > 0) {
+      return response.choices[0].message.content.trim(); // AI가 생성한 식단 반환
+    } else {
+      throw new Error('AI 응답에 예상치 못한 오류가 발생했습니다.');
+    }
   } catch (error) {
     console.error('AI 식단 생성 오류:', error);
-    return '식단 생성 중 오류가 발생했습니다.'; // 오류 메시지 반환
+    throw new Error('식단 생성 중 오류가 발생했습니다: ' + error.message); // 오류 메시지 반환
   }
 };
 
