@@ -1,116 +1,79 @@
 const db = require('../database/db'); // DB 연결
 const { generateMealPlanAI } = require('../utils/openAI'); // OpenAI 유틸리티 임포트
 
-// 사용자의 식단 생성 함수
+// 입력 유효성 검사용 라이브러리
+const { body, validationResult } = require('express-validator');
+
+// 식단 생성
 const createMealPlan = async (req, res) => {
-  const { userId } = req.body;
+  const { username } = req.body;
+
+  // 유효성 검사
+  if (!username) {
+    return res.status(400).json({ message: 'username는 필수입니다.' });
+  }
 
   try {
-    const mealPlan = await generateMealPlanAI(userId); // AI를 통한 식단 생성
+    const mealPlan = await generateMealPlanAI(username); // AI를 통한 식단 생성
     res.status(200).json({ message: '식단이 성공적으로 생성되었습니다.', mealPlan });
   } catch (error) {
-    res.status(500).json({ message: '식단 생성 중 오류 발생', error });
+    console.error("식단 생성 중 오류 발생:", error);
+    res.status(500).json({ message: '식단 생성 중 오류 발생', error: error.message });
   }
 };
 
+// 식단 조회
 const getMealPlansByDate = async (req, res) => {
-  const { userId, mealDate } = req.params;
+  const { username, mealDate } = req.query; // Change to req.query
+
+  // 유효성 검사
+  if (!username || !mealDate) {
+    return res.status(400).json({ message: 'id 및 mealDate는 필수입니다.' });
+  }
+
+  // 날짜 유효성 검사
+  const date = new Date(mealDate);
+  const today = new Date();
+  const weekFromToday = new Date();
 
   try {
-      const mealPlans = await db.query(
-          'SELECT * FROM meal_plans WHERE user_id = ? AND meal_date = ?',
-          [userId, mealDate]
-      );
+    const mealPlans = await db.query(
+      'SELECT * FROM meal_plans WHERE user_id = ? AND meal_date = ?',
+      [username, mealDate]
+    );
 
-      // meal_description은 JSON 형태이므로 필요에 따라 파싱할 수 있습니다.
-      res.status(200).json(mealPlans.map(plan => ({
-          ...plan,
-          meal_description: JSON.parse(plan.meal_description) // JSON 파싱
-      })));
+    res.status(200).json(mealPlans.map(plan => ({
+      ...plan,
+      meal_description: JSON.parse(plan.meal_description) // JSON 파싱
+    })));
   } catch (error) {
-      console.error("식사 계획 조회 중 오류 발생:", error);
-      res.status(500).json({ message: '내부 서버 오류' });
+    console.error("식사 계획 조회 중 오류 발생:", error);
+    res.status(500).json({ message: '내부 서버 오류', error: error.message });
   }
 };
 
-const createDietPlan = (user, excludedMealTimes, mealDate) => {
-  const dietPlan = {
-      breakfast: [],
-      lunch: [],
-      dinner: [],
-  };
-
-  // 식사 시간에 따라 추천
-  Object.keys(meals).forEach(mealTime => {
-      if (!excludedMealTimes.includes(mealTime)) {
-          const meal = meals[mealTime];
-          // 무작위로 식사 선택
-          for (let i = 0; i < 3; i++) { // 각 식사 시간마다 3개의 음식을 선택
-              const randomMeal = meal[Math.floor(Math.random() * meal.length)];
-              dietPlan[mealTime].push(randomMeal);
-          }
-      }
-  });
-
-  return dietPlan;
-};
-
-const addMealPlan = async (req, res) => {
-  const { userId, mealDate, mealTime, mealDescription } = req.body;
-
-  try {
-      // 해당 날짜와 시간의 기존 식사 계획 조회
-      const existingMeal = await db.query(
-          'SELECT * FROM meal_plans WHERE user_id = ? AND meal_date = ? AND meal_time = ?',
-          [userId, mealDate, mealTime]
-      );
-
-      // 이미 존재하는 경우
-      if (existingMeal.length > 0) {
-          return res.status(400).json({ message: '이미 존재하는 식사 계획입니다.' });
-      }
-
-      // 새 식사 계획 추가
-      const result = await db.query(
-          'INSERT INTO meal_plans (user_id, meal_date, meal_time, meal_description) VALUES (?, ?, ?, ?)',
-          [userId, mealDate, mealTime, JSON.stringify(mealDescription)] // JSON.stringify로 변환
-      );
-
-      // 성공률 계산 (이미지 URL이 제공된 경우)
-      const successRate = imageUrl ? 100 : 0; // 이미지를 올린 경우 성공률 100%
-
-      // 성공률 업데이트
-      await db.query(
-          'UPDATE meal_plans SET success_rate = ? WHERE id = ?',
-          [successRate, result.insertId]
-      );
-
-      res.status(201).json({ message: '식사 계획이 추가되었습니다!', success_rate: successRate });
-  } catch (error) {
-      console.error("식사 계획 추가 중 오류 발생:", error);
-      res.status(500).json({ message: '내부 서버 오류' });
-  }
-};
-
-// 식단 업데이트 함수
+// 식단 업데이트
 const updateMealPlan = async (req, res) => {
-  const { id } = req.params;
-  const { mealData } = req.body; // 예시로 추가된 데이터
+  const { mealId, mealData } = req.body;
 
-  // DB 업데이트 쿼리 (구체적인 쿼리는 필요에 따라 수정)
-  const query = `UPDATE mealPlans SET data = ? WHERE id = ?`;
+  // 유효성 검사
+  if (!mealId || !mealData) {
+    return res.status(400).json({ message: 'mealId 및 mealData는 필수입니다.' });
+  }
+
+  const query = `UPDATE meal_plans SET meal_description = ? WHERE id = ?`;
 
   try {
-    await db.query(query, [mealData, id]);
+    await db.query(query, [JSON.stringify(mealData), mealId]);
     res.status(200).json({ message: '식단이 업데이트되었습니다.' });
   } catch (error) {
-    res.status(500).json({ message: '식단 업데이트 중 오류 발생', error });
+    console.error("식단 업데이트 중 오류 발생:", error);
+    res.status(500).json({ message: '식단 업데이트 중 오류 발생', error: error.message });
   }
 };
 
 module.exports = {
   updateMealPlan,
   createMealPlan,
-  addMealPlan,
   getMealPlansByDate
 };

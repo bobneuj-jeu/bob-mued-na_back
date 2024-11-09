@@ -3,14 +3,14 @@ const db = require('../database/db');
 
 // 재료 추가
 const createFridgeItem = async (req, res) => {
-  const { username, itemName } = req.body;
+  const { username, itemname } = req.body;
 
-  if (!username || !itemName) {
+  if (!username || !itemname) {
     return res.status(400).json({ message: 'username과 itemName 값이 필요합니다.' });
   }
 
   try {
-    const result = await addFridgeItem(username, itemName);
+    const result = await addFridgeItem(username, itemname);
     res.status(201).json({ message: '재료 추가 성공', data: { id: result.insertId } });
   } catch (error) {
     console.error(`Error adding item for user ${username}:`, error);
@@ -36,17 +36,17 @@ const getFridgeItems = async (req, res) => {
 
 // 재료 삭제
 const removeFridgeItem = async (req, res) => {
-  const { username, itemName } = req.body;
+  const { username, itemname } = req.body;
   
-  if (!username || !itemName) {
+  if (!username || !itemname) {
     return res.status(400).json({ message: 'username과 itemName이 필요합니다.' });
   }
 
   try {
-    await deleteFridgeItem(username, itemName);
+    await deleteFridgeItem(username, itemname);
     res.status(200).json({ message: '재료 삭제 성공' });
   } catch (error) {
-    console.error(`Error deleting item ${itemName} for user ${username}:`, error);
+    console.error(`Error deleting item ${itemname} for user ${username}:`, error);
     res.status(500).json({ message: '재료 삭제 실패', error: error.message });
   }
 };

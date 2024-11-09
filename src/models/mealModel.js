@@ -1,10 +1,10 @@
 const db = require('../database/db');
 
 // 식단 추가
-const addMeal = (userId, mealPlan) => {
+const addMeal = (username, mealPlan) => {
   return new Promise((resolve, reject) => {
-    const query = 'INSERT INTO meals (user_id, meal_plan) VALUES (?, ?)';
-    db.query(query, [userId, mealPlan], (err, result) => {
+    const query = 'INSERT INTO Meals (user_id, meal_plan) VALUES (?, ?)';
+    db.query(query, [username, mealPlan], (err, result) => {
       if (err) {
         return reject(err);
       }
@@ -14,10 +14,10 @@ const addMeal = (userId, mealPlan) => {
 };
 
 // 식단 조회
-const getMealsByUser = (userId) => {
+const getMealsByUser = (username) => {
   return new Promise((resolve, reject) => {
-    const query = 'SELECT * FROM meals WHERE user_id = ?';
-    db.query(query, [userId], (err, results) => {
+    const query = 'SELECT * FROM Meals WHERE user_id = ?';
+    db.query(query, [username], (err, results) => {
       if (err) {
         return reject(err);
       }
@@ -29,7 +29,7 @@ const getMealsByUser = (userId) => {
 // 식단 수정
 const updateMeal = (mealId, mealPlan) => {
   return new Promise((resolve, reject) => {
-    const query = 'UPDATE meals SET meal_plan = ? WHERE id = ?';
+    const query = 'UPDATE Meals SET meal_plan = ? WHERE id = ?';
     db.query(query, [mealPlan, mealId], (err, result) => {
       if (err) {
         return reject(err);
@@ -42,7 +42,7 @@ const updateMeal = (mealId, mealPlan) => {
 // 식단 삭제
 const deleteMeal = (mealId) => {
   return new Promise((resolve, reject) => {
-    const query = 'DELETE FROM meals WHERE id = ?';
+    const query = 'DELETE FROM Meals WHERE id = ?';
     db.query(query, [mealId], (err, result) => {
       if (err) {
         return reject(err);

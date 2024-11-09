@@ -3,19 +3,17 @@ const db = require('../database/db'); // DB 연결
 
 // 사용자 등록 함수
 const registerUser = async (req, res) => {
-  const { username, password, allergies, diabetes, other_conditions } = req.body;
+  const { username, password, allergies, diabetes, anything } = req.body;
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const userAllergies = allergies || 'none';
-  const userDiabetes = diabetes || 'none';
-  const userOtherConditions = other_conditions || 'none';
+  const userAllergies = allergies || '없음';
+  const userDiabetes = diabetes || '없음';
+  const userAnything = anything || '없음';
 
-  const query = `
-    INSERT INTO users (username, password, allergies, diabetes, other_conditions)
-    VALUES (?, ?, ?, ?, ?)`;
+  const query = `INSERT INTO Users (username, password, allergies, diabetes, anything) VALUES (?, ?, ?, ?, ?)`;
 
   try {
-    await db.query(query, [username, hashedPassword, userAllergies, userDiabetes, userOtherConditions]);
+    await db.query(query, [username, hashedPassword, userAllergies, userDiabetes, userAnything]);
     res.status(201).json({ message: '회원가입이 완료되었습니다.' });
   } catch (error) {
     res.status(500).json({ message: '회원가입 중 오류 발생', error });
