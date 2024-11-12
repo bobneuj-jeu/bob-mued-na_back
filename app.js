@@ -11,11 +11,6 @@ app.use(express.json());
 app.use('/user', authRoutes);
 app.use('/meals', mealRoutes);
 
-// 기본 API 엔드포인트 설정
-app.get('/', (req, res) => {
-    res.send('Hello, this is your backend!');
-  });  
-
 // 에러 핸들링 미들웨어
 app.use((err, req, res, next) => {
   console.error('에러 발생:', err.message);

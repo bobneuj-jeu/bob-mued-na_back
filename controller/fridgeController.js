@@ -1,16 +1,12 @@
-const pool = require('../config/db');
+const FoodItem = require('../models/foodItem');
 
 // 냉장고 재료 추가
 exports.addFridgeItem = async (req, res) => {
   try {
     const { username, itemname } = req.body;
 
-    const conn = await pool.getConnection();
-    await conn.query(
-      'INSERT INTO FoodItems (username, itemname) VALUES (?, ?)',
-      [username, itemname]
-    );
-    conn.release();
+    // 새로운 재료 추가
+    await FoodItem.create({ username, itemname });
 
     res.status(201).json({ message: '재료가 추가되었습니다.' });
   } catch (error) {
@@ -24,12 +20,14 @@ exports.updateFridgeItem = async (req, res) => {
   try {
     const { id, itemname } = req.body;
 
-    const conn = await pool.getConnection();
-    await conn.query(
-      'UPDATE FoodItems SET itemname = ? WHERE id = ?',
-      [itemname, id]
-    );
-    conn.release();
+    // 해당 id의 재료를 찾아서 수정
+    const fridgeItem = await FoodItem.findByPk(id);
+    if (!fridgeItem) {
+      return res.status(404).json({ message: '해당 재료를 찾을 수 없습니다.' });
+    }
+
+    fridgeItem.itemname = itemname;
+    await fridgeItem.save();
 
     res.status(200).json({ message: '재료가 수정되었습니다.' });
   } catch (error) {
@@ -43,12 +41,13 @@ exports.deleteFridgeItem = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const conn = await pool.getConnection();
-    await conn.query(
-      'DELETE FROM FoodItems WHERE id = ?',
-      [id]
-    );
-    conn.release();
+    // 해당 id의 재료를 찾아서 삭제
+    const fridgeItem = await FoodItem.findByPk(id);
+    if (!fridgeItem) {
+      return res.status(404).json({ message: '해당 재료를 찾을 수 없습니다.' });
+    }
+
+    await fridgeItem.destroy();
 
     res.status(200).json({ message: '재료가 삭제되었습니다.' });
   } catch (error) {
