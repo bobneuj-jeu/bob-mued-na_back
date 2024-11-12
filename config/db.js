@@ -1,16 +1,10 @@
-// config/db.js
 const mariadb = require('mariadb');
+const express = require('express');
+const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-const pool = mariadb.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  connectionLimit: 5
-});
-
-const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
+// Sequelize로 데이터베이스 연결 설정
+const pool= new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
   host: process.env.DB_HOST,
   dialect: 'mariadb',
   pool: {
@@ -21,12 +15,18 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
   }
 });
 
-pool.getConnection()
-  .then(conn => {
+// 기본 API 엔드포인트 설정
+app.get('/', (req, res) => {
+  res.send('Hello, this is your backend!');
+});
+
+// DB 연결 테스트
+pool.authenticate()
+  .then(() => {
     console.log('Database 연결 성공');
     conn.release();
   })
-  .catch(error => {
+  .catch(err => {
     console.error('Database 연결 실패:', error.message);
   });
 
