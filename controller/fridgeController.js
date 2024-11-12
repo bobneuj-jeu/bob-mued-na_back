@@ -1,3 +1,5 @@
+const pool = require('../config/db');
+
 // 냉장고 재료 추가
 exports.addFridgeItem = async (req, res) => {
   try {
