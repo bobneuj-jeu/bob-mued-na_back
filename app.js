@@ -3,8 +3,6 @@ const app = express();
 const authRoutes = require('./routes/user');
 const mealRoutes = require('./routes/meals');
 require('dotenv').config();
-
-// JSON 파싱 미들웨어 설정
 app.use(express.json());
 
 // 라우트 연결
