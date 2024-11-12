@@ -12,11 +12,11 @@ const pool = mariadb.createPool({
 
 pool.getConnection()
   .then(conn => {
-    console.log('Database connected!');
+    console.log('Database 연결 성공');
     conn.release();
   })
   .catch(error => {
-    console.error('Database connection failed:', error.message);
+    console.error('Database 연결 실패:', error.message);
   });
 
 module.exports = pool;
