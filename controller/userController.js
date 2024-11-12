@@ -4,34 +4,38 @@ const jwt = require('jsonwebtoken');
 
 // 회원가입
 exports.signup = async (req, res) => {
-  try {
-    const { username, password, allergies, diabetes, anything } = req.body;
-
-    // 유효성 검사
-    if (!username || username.length > 20) {
-      return res.status(400).json({ message: '아이디는 20자 이내여야 합니다.' });
-    }
-
-    if (!password || !/(?=.*\W)(?=.*[a-z]).{8,12}/.test(password)) {
-      return res.status(400).json({ message: '비밀번호는 8~12자, 소문자와 특수문자를 포함해야 합니다.' });
-    }
-
-    // 비밀번호 암호화
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const conn = await pool.getConnection();
-    await conn.query(
+    try {
+      const { username, password, allergies, diabetes, anything } = req.body;
+  
+      // 유효성 검사
+      if (!username || username.length > 20) {
+        return res.status(400).json({ message: '아이디는 20자 이내여야 합니다.' });
+      }
+  
+      if (!password || !/(?=.*\W)(?=.*[a-z]).{8,12}/.test(password)) {
+        return res.status(400).json({ message: '비밀번호는 8~12자, 소문자와 특수문자를 포함해야 합니다.' });
+      }
+  
+      // 알러지와 기타질환 값이 없으면 '없음'으로 설정
+      const allergiesValue = allergies || '없음';
+      const anythingValue = anything || '없음';
+  
+      // 비밀번호 암호화
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      const conn = await pool.getConnection();
+      await conn.query(
         'INSERT INTO Users (username, password, allergies, diabetes, anything, created_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
-        [username, hashedPassword, allergies, diabetes, anything]
+        [username, hashedPassword, allergiesValue, diabetes, anythingValue]
       );      
-    conn.release();
-    
-    res.status(201).json({ message: '회원가입이 완료되었습니다.' });
-  } catch (error) {
-    console.error('회원가입 에러:', error.message);
-    res.status(500).json({ message: '회원가입 중 오류가 발생했습니다.', error: error.message });
-  }
-};
+      conn.release();
+      
+      res.status(201).json({ message: '회원가입이 완료되었습니다.' });
+    } catch (error) {
+      console.error('회원가입 에러:', error.message);
+      res.status(500).json({ message: '회원가입 중 오류가 발생했습니다.', error: error.message });
+    }
+  };  
 
 // 로그인
 exports.login = async (req, res) => {
