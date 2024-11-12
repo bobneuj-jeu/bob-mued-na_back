@@ -17,6 +17,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: '서버 에러가 발생했습니다.', error: err.message });
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`서버가 ${process.env.PORT}번 포트에서 실행 중입니다.`);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
