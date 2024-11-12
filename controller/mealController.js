@@ -4,7 +4,7 @@ const sequelize = require('../config/db');
 // 식단 작성
 exports.createMeal = async (req, res) => {
   try {
-    const { username, meal_date, meal_time, food_item_ids, success_rate } = req.body;
+    const { username, meal_date, meal_time, food_item_ids} = req.body;
 
     // 새로운 식단 추가
     await Meal.create({ username, meal_date, meal_time, food_item_ids, success_rate });
@@ -66,7 +66,7 @@ exports.getWeeklyMeals = async (req, res) => {
 // 식단 수정
 exports.updateMeal = async (req, res) => {
   try {
-    const { id, meal_date, meal_time, food_item_ids, success_rate } = req.body;
+    const { id, meal_date, meal_time, food_item_ids} = req.body;
 
     const meal = await Meal.findByPk(id);
     if (!meal) {
@@ -76,7 +76,6 @@ exports.updateMeal = async (req, res) => {
     meal.meal_date = meal_date;
     meal.meal_time = meal_time;
     meal.food_item_ids = food_item_ids;
-    meal.success_rate = success_rate;
 
     await meal.save();
 

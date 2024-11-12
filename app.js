@@ -2,12 +2,15 @@ const express = require('express');
 const app = express();
 const authRoutes = require('./routes/user');
 const mealRoutes = require('./routes/meals');
+const fridgeRoutes = require('./routes/fridge');
+
 require('dotenv').config();
 app.use(express.json());
 
 // 라우트 연결
 app.use('/user', authRoutes);
 app.use('/meals', mealRoutes);
+app.use('/fridge', fridgeRoutes);
 
 // 에러 핸들링 미들웨어
 app.use((err, req, res, next) => {

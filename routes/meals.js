@@ -6,7 +6,7 @@ const mealController = require('../controller/mealController');
 router.post('/create', mealController.createMeal);
 
 // 이번 달 평균 식사율 조회
-router.get('/success-rate/:username', mealController.getMonthlySuccessRate);
+router.get('/monthly/:username', mealController.getMonthlySuccessRate);
 
 // 이번 주 식단 조회
 router.get('/weekly/:username', mealController.getWeeklyMeals);
