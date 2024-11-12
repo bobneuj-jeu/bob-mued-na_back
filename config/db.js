@@ -6,10 +6,11 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
   host: process.env.DB_HOST,
   dialect: 'mariadb',  // 사용 중인 DBMS에 맞게 설정
   pool: {
+    port:XPathExpression.env.DB_HOST,
     max: 5,    // 최대 연결 수
     min: 0,
     acquire: 10000,
-    idle: 10000
+    idle: 10000,
   }
 });
 
