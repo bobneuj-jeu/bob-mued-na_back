@@ -15,6 +15,6 @@ router.get('/:username', userController.getUserInfo);
 router.put('/change-password', userController.changePassword);
 
 // 질환 수정
-router.put('/update-diseases', userController.updateUserDiseases);
+router.put('/update-diseases/:username', userController.updateUserDiseases);
 
 module.exports = router;

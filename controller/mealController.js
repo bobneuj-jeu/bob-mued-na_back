@@ -23,7 +23,7 @@ exports.getMonthlySuccessRate = async (req, res) => {
 
     const result = await Meal.findOne({
       attributes: [
-        [sequelize.fn('AVG', sequelize.col('success_rate')), 'average_success_rate']
+        [sequelize.fn('PNG', sequelize.col('success_rate')), 'average_success_rate']
       ],
       where: {
         username,

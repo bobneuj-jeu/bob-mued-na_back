@@ -17,7 +17,7 @@ const FoodItem = sequelize.define('FoodItem', {
   }
 }, {
   tableName: 'FoodItems',
-  timestamps: false // 이 모델에서 createdAt, updatedAt 필드를 사용하지 않음
+  timestamps: false 
 });
 
 module.exports = FoodItem;
