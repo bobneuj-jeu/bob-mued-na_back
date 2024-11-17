@@ -1,20 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const mealController = require('../controller/mealController');
+const mealController = require('../controllers/mealController');
+const upload = require('../middleware/upload');  // 이미지 업로드 미들웨어
+
+// 식사 날짜 및 시간 선택
+router.post('/', mealController.selectMealTime);
 
 // 식단 작성
-router.post('/create', mealController.createMeal);
-
-// 이번 달 평균 식사율 조회
-router.get('/monthly/:username', mealController.getMonthlySuccessRate);
-
-// 이번 주 식단 조회
-router.get('/weekly/:username', mealController.getWeeklyMeals);
+router.post('/create', mealController.createMealPlan);
 
 // 식단 수정
-router.put('/update', mealController.updateMeal);
+router.put('/update-meal-plan', mealController.updateMealPlan);
 
-// 달력에 성공률 표시 (이번 달)
-router.get('/calendar/:username', mealController.getCalendarSuccessRate);
+// 식단 조회
+router.get('/view-meal-plan', mealController.viewMealPlan);
+
+// 식단 인증 (이미지 업로드 포함)
+router.post('/authenticate', upload.single('meal_image'), mealController.authenticateMeal);
+
+// 식사률 계산
+router.get('/success', mealController.calculateSuccessRate);
+
+// 식사률 조회
+router.get('/viewSuccess', mealController.viewSuccessRate);
 
 module.exports = router;

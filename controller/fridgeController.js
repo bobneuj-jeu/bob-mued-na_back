@@ -3,7 +3,8 @@ const FoodItem = require('../models/foodItem');
 // 냉장고 재료 추가
 exports.addFridgeItem = async (req, res) => {
   try {
-    const { username, itemname } = req.body;
+    const { username } = req.params;  // URL에서 유저 이름 받기
+    const { itemname } = req.body;    // 요청 본문에서 재료 이름 받기
 
     // 새로운 재료 추가
     await FoodItem.create({ username, itemname });
@@ -15,13 +16,14 @@ exports.addFridgeItem = async (req, res) => {
   }
 };
 
-// 유저의 식자재 목록을 보여주는 API
+// 유저 식자재 보여줌
 exports.getFridgeItems = async (req, res) => {
   try {
     const { username } = req.params;  // URL에서 유저 이름 받기
 
-    // 해당 유저의 모든 식자재 가져오기
+    // 해당 유저의 모든 식자재 가져오기 (필요한 필드만 선택)
     const fridgeItems = await FoodItem.findAll({
+      attributes: ['itemname'],  // 필요한 필드만 선택
       where: {
         username: username  // 유저명으로 필터링
       }
@@ -40,11 +42,20 @@ exports.getFridgeItems = async (req, res) => {
   }
 };
 
-// 식자재 삭제 API
+// 식자재 삭제
 exports.deleteFridgeItem = async (req, res) => {
   try {
     const { username } = req.params;  // URL에서 유저 이름 받기
     const { itemname } = req.body;    // 요청 본문에서 삭제할 식자재 이름 받기
+
+    // 유효성 검사: username 또는 itemname이 없으면 에러 메시지 반환
+    if (!username) {
+      return res.status(400).json({ message: 'username이 누락되었습니다.' });
+    }
+
+    if (!itemname) {
+      return res.status(400).json({ message: 'itemname이 누락되었습니다.' });
+    }
 
     // 해당 유저의 냉장고에서 itemname에 해당하는 식자재 찾기
     const fridgeItem = await FoodItem.findOne({
