@@ -1,28 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const mealController = require('../controllers/mealController');
-const upload = require('../middleware/upload');
-const multer = require('multer');
+const fridgeController = require('../controller/fridgeController');
 
-// 식사 날짜 및 시간 선택
-router.post('/selectMealTime', mealController.selectMealTime);
+// 냉장고 재료 추가
+router.post('/add/:username', fridgeController.addFridgeItem);
 
-// 식단 작성
-router.post('/createMealPlan', mealController.createMealPlan);
+// 유저 식자재 목록 조회
+router.get('/:username', fridgeController.getFridgeItems);
 
-// 식단 수정
-router.put('/updateMealPlan', mealController.updateMealPlan);
-
-// 식단 조회
-router.get('/viewMealPlan', mealController.viewMealPlan);
-
-// 식사 인증 (이미지 업로드 포함)
-router.post('/authenticateMeal', upload.single('mealImage'), mealController.authenticateMeal);
-
-// 식사 성공률 계산
-router.get('/calculateSuccessRate', mealController.calculateSuccessRate);
-
-// 식사 성공률 조회
-router.get('/viewSuccessRate', mealController.viewSuccessRate);
+// 식자재 삭제
+router.delete('/delete/:username', fridgeController.deleteFridgeItem);
 
 module.exports = router;

@@ -1,12 +1,7 @@
-const { DataTypes } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
 const Meal = sequelize.define('Meal', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
   username: {
     type: DataTypes.STRING,
     allowNull: false
@@ -17,19 +12,15 @@ const Meal = sequelize.define('Meal', {
   },
   meal_time: {
     type: DataTypes.STRING,
-    allowNull: false
-  },
-  food_item_ids: {
-    type: DataTypes.JSONB,  // 배열이나 JSON 형태로 저장
-    allowNull: false
+    allowNull: true
   },
   success_rate: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: DataTypes.FLOAT,
+    defaultValue: 0
   }
 }, {
-  tableName: 'Meals',
-  timestamps: false // timestamps를 사용하지 않음
+  timestamps: true,
+  tableName: 'meals'
 });
 
 module.exports = Meal;

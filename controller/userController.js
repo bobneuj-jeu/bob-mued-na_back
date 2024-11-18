@@ -63,7 +63,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// 사용자 정보 조회 (GET 메서드 사용, URL 파라미터로 username 전달)
+// 사용자 정보 조회 
 exports.getUserInfo = async (req, res) => {
   try {
     const { username } = req.params;
@@ -99,12 +99,12 @@ exports.changePassword = async (req, res) => {
     }
 
     // 현재 비밀번호 확인
-    if (currentPassword !== user.password) {  // 평문 비밀번호 비교
+    if (currentPassword !== user.password) { 
       return res.status(401).json({ message: '현재 비밀번호가 잘못되었습니다.' });
     }
 
     // 새 비밀번호를 그대로 저장
-    user.password = newPassword;  // 비밀번호를 해싱하지 않고 평문 그대로 저장
+    user.password = newPassword;
     await user.save();
 
     res.status(200).json({ message: '비밀번호가 변경되었습니다.' });
@@ -114,10 +114,10 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-// 질환 수정 (PUT 메서드 사용)
+// 질환 수정
 exports.updateUserDiseases = async (req, res) => {
   try {
-    const { username } = req.params; // URL 파라미터에서 username 가져오기
+    const { username } = req.params;
     const { allergies, diabetes, anything } = req.body;
 
     // 사용자 조회

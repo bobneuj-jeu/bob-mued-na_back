@@ -22,15 +22,11 @@ const User = sequelize.define('User', {
   },
   diabetes: {
     type: DataTypes.STRING,
-    defaultValue: '없음'
+    defaultValue: '당뇨없음'
   },
   anything: {
     type: DataTypes.STRING,
     defaultValue: '없음'
-  },
-  created_at: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'Users',

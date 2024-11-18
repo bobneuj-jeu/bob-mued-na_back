@@ -3,7 +3,7 @@ const FoodItem = require('../models/foodItem');
 // 냉장고 재료 추가
 exports.addFridgeItem = async (req, res) => {
   try {
-    const { username } = req.params;  // URL에서 유저 이름 받기
+    const { username } = req.params;
     const { itemname } = req.body;    // 요청 본문에서 재료 이름 받기
 
     // 새로운 재료 추가
@@ -19,7 +19,7 @@ exports.addFridgeItem = async (req, res) => {
 // 유저 식자재 보여줌
 exports.getFridgeItems = async (req, res) => {
   try {
-    const { username } = req.params;  // URL에서 유저 이름 받기
+    const { username } = req.params;
 
     // 해당 유저의 모든 식자재 가져오기 (필요한 필드만 선택)
     const fridgeItems = await FoodItem.findAll({
@@ -45,8 +45,8 @@ exports.getFridgeItems = async (req, res) => {
 // 식자재 삭제
 exports.deleteFridgeItem = async (req, res) => {
   try {
-    const { username } = req.params;  // URL에서 유저 이름 받기
-    const { itemname } = req.body;    // 요청 본문에서 삭제할 식자재 이름 받기
+    const { username } = req.params;
+    const { itemname } = req.body;
 
     // 유효성 검사: username 또는 itemname이 없으면 에러 메시지 반환
     if (!username) {
