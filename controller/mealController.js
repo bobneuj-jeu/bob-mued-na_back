@@ -3,23 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const { Sequelize } = require('sequelize');
 
-// 식단 작성
-const createMeal = async (req, res) => {
-  const { username, meal_date, meal_time } = req.body;
-
-  try {
-    if (!username || !meal_date) {
-      return res.status(400).json({ message: 'Username과 meal_date는 필수입니다.' });
-    }
-
-    const mealTime = meal_time || '없음';
-    return res.status(201).json({message:'식단이 성공적으로 작성되었습니다.'});
-  } catch (error) {
-    console.error('식단 작성 중 오류:', error);
-    return res.status(500).json({ message: '서버 오류' });
-  }
-};
-
 // 식단 수정
 const updateMeal = async (req, res) => {
   const { meal_id, meal_date, meal_time } = req.body;
@@ -125,7 +108,6 @@ const getSuccessRate = async (req, res) => {
 };
 
 module.exports = {
-  createMeal,
   updateMeal,
   getMeals,
   authenticateMeal,

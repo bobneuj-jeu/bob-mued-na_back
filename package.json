@@ -3,22 +3,22 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.3",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "jsonwebtoken": "^9.0.2",
-    "mariadb": "^3.4.0",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.11.4",
     "openai": "^4.72.0",
-    "sequelize": "^6.37.5"
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.5",
+    "sequelize-typescript": "^2.1.6",
+    "ts-node": "^10.9.2"
   },
   "description": ""
 }
