@@ -8,10 +8,10 @@ const {
   calculateSuccessRate,
   getSuccessRate
 } = require('../controller/mealController');
-const mealPlanController = require('../controller/mealPlanController')
+const mealPlanController = require('../controller/mealPlanController');
 const router = express.Router();
 
-router.post('/create', mealPlanController.createMealPlan);
+router.post('/create/:username', mealPlanController.parseMenu);
 router.put('/update', updateMeal); // 식단 수정
 router.get('/', getMeals); // 식단 조회
 router.post('/authenticate', upload.single('mealImage'), authenticateMeal); // 식단 인증(이미지활용)

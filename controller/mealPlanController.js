@@ -1,114 +1,149 @@
-require('dotenv').config();
-const { OpenAI } = require('openai');
-const Meal = require('../models/meal'); // Meal 모델 연결
-const User = require('../models/user'); // User 모델 연결
+const dotenv = require('dotenv');
+const { OpenAI } = require('openai'); 
+const User = require('../models/user'); // 사용자 정보 가져오는 모듈
+const food = require('../models/foodItem'); // 식재료 목록을 가져오는 모듈
 
-// OpenAI API 초기화
+dotenv.config();
+
+// OpenAI 인스턴스 생성 (new 사용)
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const DAYS = ['월', '화', '수', '목', '금', '토', '일'];
-
-// generateMealPlan 함수 정의
-async function generateMealPlan(prompt) {
+async function getModelList() {
   try {
-    // OpenAI에서 스트리밍 응답을 받음
-    const stream = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo', // 사용할 모델
-      messages: [{ role: 'user', content: prompt }],
-      stream: true, // 스트리밍 응답 활성화
-    });
-
-    let responseText = '';
-    // 스트리밍 데이터를 받아서 responseText에 저장
-    for await (const chunk of stream) {
-      responseText += chunk.choices[0]?.delta?.content || '';
-    }
-
-    return responseText; // 스트리밍 데이터를 모두 받은 후 반환
+    // 사용 가능한 모델 목록을 가져옵니다.
+    const models = await openai.models.list();
+    console.log('Available models:', models); // 모델 목록 출력
   } catch (error) {
-    console.error('Error generating meal plan:', error);
-    throw new Error('Failed to generate meal plan');
+    console.error('Error fetching model list:', error);
   }
 }
 
-// 식단 생성 함수
-exports.createMealPlan = async (req, res) => {
+exports.parseMenu = async (req, res) => {
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(500).json({
+      error: {
+        message: "OpenAI API 키가 설정되지 않았습니다. 환경변수를 확인해주세요.",
+      },
+    });
+  }
+
+  const { username, meal_date, meal_time } = req.body;
+
+  // meal_date와 meal_time이 공백일 경우 '없음'으로 처리
+  const mealDate = meal_date?.trim() || '없음';
+  const mealTime = meal_time?.trim() || '없음';
+
+  if (!username) {
+    return res.status(400).json({
+      error: {
+        message: "잘못된 입력입니다. 사용자 이름을 입력해주세요.",
+      },
+    });
+  }
+
   try {
-    const { username, meal_date, meal_time } = req.body;
-
-    // 사용자 정보 조회
-    const user = await User.findOne({ where: { username } });
-    if (!user) {
-      return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+    // 사용자 정보를 가져옵니다.
+    const userInfo = await User.findOne({ username });
+    if (!userInfo) {
+      return res.status(404).json({
+        error: {
+          message: "사용자를 찾을 수 없습니다.",
+        },
+      });
     }
 
-    const { allergies, diabetes, anything } = user;
+    const { allergies, diabetes, anything } = userInfo; // 사용자 알러지, 당뇨, 기타 정보
 
-    // 제외할 날짜와 시간 계산
-    const remainingDays = DAYS.filter(day => day !== meal_date);
-    const diseases = [allergies, diabetes, anything].filter(Boolean).join(', ');
-
-    // OpenAI에 보낼 프롬프트 생성
-    const prompt = `
-      식단을 작성: ${meal_date}와 ${meal_time}를 제외한 일주일 모든 식단 작성.
-      - Include these days: ${remainingDays.join(', ')}.
-      - 질환 고려 식단 작성: ${diseases}.
-      - 메뉴의 구성은 [메인1, 메인2, 반찬1, 반찬2, 반찬3, 후식]으로 고정.
-      - 최대 3개의 식사만 작성.
-      - 부산 사투리 사용. (전 -> 지짐, 찌개 -> 짜글이, 부추 -> 정구지)
-      - Format the response as JSON:
-      {
-        "days": [
-          {
-            "day": "요일명",
-            "meals": [
-              {
-                "time": "시간",
-                "menu": {
-                  "main1": "...",
-                  "main2": "...",
-                  "side1": "...",
-                  "side2": "...",
-                  "side3": "...",
-                  "dessert": "..."
-                }
-              }
-            ]
-          },
-          ...
-        ]
-      }
-    `;
-
-    // OpenAI에서 식단을 스트리밍으로 생성
-    const mealPlanResponse = await generateMealPlan(prompt); // 스트리밍 응답을 처리하는 함수 호출
-
-    // 응답을 받았으면 식단 데이터베이스에 저장
-    const mealPlans = JSON.parse(mealPlanResponse);
-
-    for (const day of mealPlans.days) {
-      let mealCount = 0;
-      for (const meal of day.meals) {
-        if (mealCount >= 3) break; // 최대 3개의 식사만 저장
-        await Meal.create({
-          userId: user.id,
-          date: day.day,
-          time: meal.time,
-          menu: JSON.stringify(meal.menu),
-        });
-        mealCount++;
-      }
+    // 사용자의 식재료 목록을 가져옵니다.
+    const itemname = await food(username);
+    if (!itemname || itemname.length === 0) {
+      return res.status(404).json({
+        error: {
+          message: "사용자의 식재료 목록을 찾을 수 없습니다.",
+        },
+      });
     }
 
-    // 응답을 한 번만 보내도록 수정
-    res.status(201).json({ message: '성공적으로 식단을 생성했습니다.', mealPlans });
+    // 유효한 식재료 목록 필터링 (예시: 빈 문자열, 또는 잘못된 재료 제외)
+    const validIngredients = itemname.filter((ingredient) => ingredient.trim() !== "");
+    if (validIngredients.length === 0) {
+      return res.status(400).json({
+        error: {
+          message: "유효한 식재료가 없습니다. 제공된 식재료 목록을 확인해주세요.",
+        },
+      });
+    }
+
+    // 프롬프트 생성
+    const prompt = generatePrompt(username, mealDate, mealTime, validIngredients, allergies, diabetes, anything);
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",  
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    // OpenAI 응답 검증 및 메뉴 파싱
+    if (!completion || !completion.data || !completion.data.choices || !completion.data.choices[0].message) {
+      throw new Error('OpenAI 응답 형식에 문제가 있습니다.');
+    }
+
+    const menu = parseMenu(completion.data.choices[0].message.content);
+    return res.status(200).json({ menu });
   } catch (error) {
-    console.error('식단을 만드는 중에 오류가 생겼습니다. :', error);
-    // 중복 응답 방지
-    if (!res.headersSent) {
-      return res.status(500).json({ error: '서버 오류', details: error.message });
-    }
+    console.error("OpenAI API 오류:", error.message);
+    return res.status(500).json({
+      error: {
+        message: `메뉴 생성 중 오류가 발생했습니다: ${error.message}`,
+      },
+    });
   }
 };
+
+function generatePrompt(username, meal_date, meal_time, itemname, allergies, diabetes, anything) {
+  const ingredientList = itemname.join(", ");
+  const allergyList = allergies ? allergies.join(", ") : "없음";
+  const diabetesList = diabetes ? diabetes.join(", ") : "없음";
+  const anythingList = anything ? anything.join(", ") : "없음";
+
+  return `
+      사용자 이름: ${username}을 기준으로,
+      날짜: ${meal_date}, 시간: ${meal_time}을 제외한 1주일간의 식단을 짜라.  
+      식단을 짜는 데에 있어서 다음과 같은 조건들을 고려하라:
+      - 알러지: ${allergyList}
+      - 당뇨 상태: ${diabetesList}
+      - 기타 건강 상태: ${anythingList}
+      - 하루 최대 3개의 메뉴로 구성
+      - 각 메뉴는 반드시 다음과 같은 항목을 포함해야 한다:
+        1. 메인1
+        2. 메인2
+        3. 반찬1
+        4. 반찬2
+        5. 반찬3
+        6. 후식
+      - 메뉴의 구성은 부산 사투리로 작성해야 한다. 예를 들어:
+        - "전" → "지짐"
+        - "찌개" → "짜글이"
+        - "부추" → "정구지"
+      - 하루 3개 이상의 식사를 포함시키되, 중복되지 않도록 식단을 짜라.
+
+      예시:
+      월 조식: [돼지국밥, 생선구이, 정구지무침, 무말랭이, 콩자반, 케이키]
+      월 중식: [부대찌개, 고등어구이, 배추김치, 애호박볶음, 콩나물무침, 식혜]
+      월 석식: [불고기, 돌솥비빔밥, 깻잎지짐, 시금치나물, 김치, 매실차]
+      화 조식: [흑미밥, 김치짜글이, 김치지짐, 도다리, 김치, 커피]
+    `;
+}
+
+function parseMenu(text) {
+  const menus = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("메뉴"))
+    .map((menu) => {
+      const parts = menu.split(":")[1].split(",");
+      return parts.map((item) => item.trim());
+    });
+
+  return menus.slice(0, 3); // 최대 3개의 메뉴만 반환
+}
